@@ -1,0 +1,8 @@
+html
+  body
+    ul
+      - @contributors.each_with_index do |contributor, i|
+        li
+          = contributor
+          a href="/award/#{contributor}?place=#{i+1}" pdf
+          a href="/zip_award/#{contributor}?place=#{i+1}" download
