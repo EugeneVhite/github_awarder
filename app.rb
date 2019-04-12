@@ -1,7 +1,5 @@
 require 'roda'
 require 'json'
-require 'pry'
-require 'pry-byebug'
 
 require_relative './lib/award.rb'
 
@@ -16,7 +14,11 @@ class App < Roda
       url = request.params['url']
       @contributors = Award.fetch_top_contributors(url)
 
-      render('repo')
+      if @contributors
+        render('repo')
+      else
+        render('main')
+      end
     end
 
     r.is('pdf') do
