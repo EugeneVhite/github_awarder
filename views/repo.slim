@@ -1,8 +1,16 @@
 html
   body
-    ul
+    form action="/repo"
+      input name="url" type="text"
+      input type="submit"
+    h2 Results
+    table
       - @contributors.each_with_index do |contributor, i|
-        li
-          = contributor
-          a href="/award/#{contributor}?place=#{i+1}" pdf
-          a href="/zip_award/#{contributor}?place=#{i+1}" download
+        tr
+          td = contributor
+          td 
+            a href="/pdf?name=#{contributor}&place=#{i+1}" pdf
+          td 
+            a href="/pdf?name=#{contributor}&place=#{i+1}&download=" Download
+    p 
+      a href="/zip?#{contributors_to_params(@contributors)}" Download All

@@ -1,10 +1,9 @@
 require 'roda'
-require 'faraday'
 require 'json'
 require 'pry'
 require 'pry-byebug'
-require 'prawn'
-require 'zip'
+
+require_relative './lib/award.rb'
 
 class App < Roda
   plugin :render, engine: :slim
@@ -15,34 +14,31 @@ class App < Roda
 
     r.is('repo') do
       url = request.params['url']
-      host, repo = /github.com\/(\w+)\/(\w+)/.match(url)[1..2]
-
-      resp = Faraday.get("https://api.github.com/repos/#{host}/#{repo}/contributors")
-      @contributors = JSON.parse(resp.body)[0..2].map { |c| c["login"] }
+      @contributors = Award.fetch_top_contributors(url)
 
       render('repo')
     end
 
-    r.is('award', String) do |name|
+    r.is('pdf') do
+      name = request.params['name']
+      place = request.params['place']
+
       response.headers['Content-Type'] = 'text/pdf'
-      pdf_io(name, request.params['place'])
+      if request.params['download']
+        response.headers['Content-Disposition'] = "attachment; filename=#{name}.pdf"
+      end
+
+      Award.pdf_io(name, place)
     end
 
-    r.is('zip_award', String) do |name|
+    r.is('zip') do
       response.headers['Content-Type'] = 'application/octet-stream'
-      response.headers['Content-Disposition'] = "attachment; filename=#{name}.zip"
-      stringio = Zip::OutputStream.write_buffer do |z_io|
-        z_io.put_next_entry("#{name}.pdf")
-        z_io.write pdf_io(name, request.params['place'])
-      end
-      stringio.rewind
-      stringio.sysread
+      response.headers['Content-Disposition'] = "attachment; filename=awards.zip"
+      Award.zip_contributors(request.params.map { |name, place| {name: name, place: place}})
     end
   end
 
-  def pdf_io(name, place)
-    pdf = Prawn::Document.new
-    pdf.text "Awards ##{place} to: #{name}"
-    pdf.render
+  def contributors_to_params(contributors)
+    contributors.each_with_index.map { |name, place| "#{name}=#{place+1}" }.join('&')
   end
 end
