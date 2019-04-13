@@ -3,3 +3,5 @@ html
     form action="/repo"
       input name="url" type="text"
       input type="submit"
+    - if @error
+      p = @error

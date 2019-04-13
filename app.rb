@@ -12,11 +12,13 @@ class App < Roda
 
     r.is('repo') do
       url = request.params['url']
-      @contributors = Award.fetch_top_contributors(url)
+      fetch_result = Award.fetch_top_contributors(url)
 
-      if @contributors
+      if fetch_result.success?
+        @contributors = fetch_result.value!
         render('repo')
       else
+        @error = fetch_result.failure.to_s
         render('main')
       end
     end
