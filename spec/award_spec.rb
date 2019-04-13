@@ -12,6 +12,12 @@ RSpec.describe Award do
 
     context 'with invalid path' do
       let(:repo_path) { 'invalid_path' }
+
+      it { is_expected.to be_failure }
+
+      it 'returns error' do
+        expect(subject.failure).to be :invalid_repo_path
+      end
     end
   end
 end
